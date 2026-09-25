@@ -1,1021 +1,116 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AS Infotech - Enterprise ERP & Accounting Suite</title>
-  <!-- Tailwind CSS & Lucide Icons via CDN (MIT Open Source License - No Copyright Risks) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- SheetJS for 100% Client-Side Excel Import/Export -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <style>
-    @media print {
-      body * { visibility: hidden; }
-      #printableArea, #printableArea * { visibility: visible; }
-      #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AS Infotech</title>
+<style>
+:root{--nav:#062e56;--blue:#0b67c2;--yellow:#f5c400;--bg:#f4f7fb;--card:#fff;--text:#12304d;--muted:#6b7c8f;--green:#159447;--red:#dc2349}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial;color:var(--text)}
+header{height:62px;background:var(--nav);color:#fff;display:flex;align-items:center;padding:0 14px;gap:12px;position:sticky;top:0;z-index:20}.menu{font-size:25px;border:0;background:none;color:white}.logo{font-size:20px;font-weight:800}.logo b{color:var(--yellow)}.topright{margin-left:auto;font-size:12px}
+.layout{display:flex;min-height:calc(100vh - 62px)}aside{width:230px;background:#082f55;padding:12px;flex-shrink:0}aside button{display:block;width:100%;padding:11px;border:0;border-radius:9px;background:none;color:#d9e9f8;text-align:left;font-size:14px;margin:2px 0}aside button.active,aside button:hover{background:var(--blue);color:#fff}.group{color:#80a9cf;font-size:10px;text-transform:uppercase;margin:12px 9px 5px;letter-spacing:1px}
+main{flex:1;padding:18px;max-width:1300px;margin:auto;width:100%}.page{display:none}.page.active{display:block}h1{margin:0 0 5px;font-size:25px}.sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card,.box{background:var(--card);border:1px solid #e1e9f1;border-radius:13px;padding:15px;box-shadow:0 3px 12px #07345b0b}.label{font-size:11px;color:var(--muted)}.big{font-size:22px;font-weight:800;margin-top:5px}.green{color:var(--green)}.red{color:var(--red)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.btn{border:0;border-radius:8px;padding:10px 13px;background:var(--blue);color:white;font-weight:700}.btn.alt{background:#e8f1fb;color:var(--blue)}.btn.green{background:var(--green)}
+.form{background:#fff;border:1px solid #e1e9f1;border-radius:13px;padding:15px;margin:12px 0}.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}.field input,.field select{width:100%;padding:10px;border:1px solid #d5dfe9;border-radius:8px;background:white}
+.search{width:100%;padding:10px;border:1px solid #d5dfe9;border-radius:8px;margin:8px 0 12px}table{width:100%;border-collapse:collapse;font-size:12px;background:#fff}th,td{padding:9px;border-bottom:1px solid #edf1f5;text-align:left}th{background:#f6f8fb;color:#52677c}
+.alert{padding:11px;background:#fff8d9;border-left:4px solid var(--yellow);border-radius:7px;font-size:13px}.tag{font-size:10px;padding:4px 7px;border-radius:20px;background:#e8f7ef;color:var(--green);font-weight:700}
+@media(max-width:800px){aside{position:fixed;top:62px;bottom:0;left:-250px;z-index:15;transition:.2s}aside.open{left:0}.cards{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr 1fr}main{padding:12px}}
+@media(max-width:500px){.formgrid{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}.topright{display:none}}
+</style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
-
-  <!-- ================= AUTHENTICATION GATE ================= -->
-  <div id="authScreen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8 border border-slate-200">
-      <div class="text-center mb-6">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-blue-600 text-white font-black text-2xl shadow-lg mb-3">
-          AS
-        </div>
-        <h1 class="text-2xl font-bold text-slate-900">AS Infotech ERP</h1>
-        <p class="text-sm text-slate-500">Sign in to access your enterprise portal</p>
-      </div>
-
-      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">User ID / Email</label>
-          <input id="loginEmail" type="text" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none" placeholder="admin@asinfotech.com" value="admin@asinfotech.com">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
-          <input id="loginPassword" type="password" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none" placeholder="••••••••" value="admin123">
-        </div>
-        <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition">
-          Secure Login
-        </button>
-      </form>
-      <p class="text-xs text-center text-slate-400 mt-4">Master Credentials: admin@asinfotech.com / admin123</p>
-    </div>
-  </div>
-
-  <!-- ================= MAIN ERP INTERFACE ================= -->
-  <div id="appContainer" class="hidden min-h-screen flex flex-col">
-    <!-- Top Navbar -->
-    <header class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-sm sticky top-0 z-30">
-      <div class="flex items-center space-x-4">
-        <span class="bg-blue-600 text-white px-3 py-1.5 rounded-lg font-black tracking-wider text-sm shadow">AS INFOTECH</span>
-        <div>
-          <select id="companySelector" onchange="switchCompany(this.value)" class="text-sm font-semibold bg-slate-100 border border-slate-300 rounded-md px-3 py-1.5 focus:outline-none">
-            <!-- Dynamic Companies -->
-          </select>
-          <button onclick="openModal('newCompanyModal')" class="ml-2 text-xs text-blue-600 hover:underline font-semibold">+ New Business</button>
-        </div>
-      </div>
-
-      <div class="flex items-center space-x-3">
-        <button onclick="downloadMasterBackup()" class="px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-300 rounded-lg hover:bg-emerald-100 flex items-center">
-          <i data-lucide="download" class="w-3.5 h-3.5 mr-1"></i> Master Excel Backup
-        </button>
-        <button onclick="clearCurrentData()" class="px-3 py-1.5 text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-300 rounded-lg hover:bg-rose-100 flex items-center">
-          <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1"></i> Clear Data
-        </button>
-        <div class="h-6 w-px bg-slate-300"></div>
-        <div class="text-right">
-          <p id="activeUserBadge" class="text-xs font-bold text-slate-800">Master Admin</p>
-          <button onclick="handleLogout()" class="text-xs text-rose-600 hover:underline">Log Out</button>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Workspace (Sidebar + Views) -->
-    <div class="flex flex-1">
-      <!-- Customizable Sidebar Navigation -->
-      <aside class="w-64 bg-slate-900 text-slate-300 p-4 flex flex-col justify-between shrink-0">
-        <nav id="sidebarNav" class="space-y-1">
-          <!-- Rendered dynamically from user-customized config -->
-        </nav>
-        <div class="pt-4 border-t border-slate-800 text-xs text-slate-500 text-center">
-          AS Infotech Enterprise Suite v2.0<br>Lifetime Standalone Engine
-        </div>
-      </aside>
-
-      <!-- Viewports Container -->
-      <main class="flex-1 p-6 overflow-y-auto">
-        
-        <!-- 1. DASHBOARD VIEW -->
-        <section id="view_dashboard" class="erp-view">
-          <div class="mb-6 flex justify-between items-center">
-            <div>
-              <h2 class="text-2xl font-bold text-slate-800">Executive Financial Dashboard</h2>
-              <p class="text-sm text-slate-500">Live operational overview for selected enterprise</p>
-            </div>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase">Total Sales Revenue</span>
-              <h3 id="statSales" class="text-2xl font-black text-slate-900 mt-2">₹0.00</h3>
-            </div>
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase">Purchases & Inward</span>
-              <h3 id="statPurchases" class="text-2xl font-black text-slate-900 mt-2">₹0.00</h3>
-            </div>
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase">Gross Operating Profit</span>
-              <h3 id="statProfit" class="text-2xl font-black text-emerald-600 mt-2">₹0.00</h3>
-            </div>
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase">Outstanding Receivables</span>
-              <h3 id="statReceivables" class="text-2xl font-black text-amber-600 mt-2">₹0.00</h3>
-            </div>
-          </div>
-        </section>
-
-        <!-- 2. CUSTOMER / PARTY MASTER -->
-        <section id="view_parties" class="erp-view hidden">
-          <div class="flex justify-between items-center mb-6">
-            <div>
-              <h2 class="text-2xl font-bold text-slate-800">Party Master (Customers)</h2>
-              <p class="text-sm text-slate-500">Customer directory, credit terms, and ledger outstanding</p>
-            </div>
-            <div class="flex space-x-2">
-              <button onclick="downloadTemplate('parties')" class="px-3 py-2 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center">
-                <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-1.5 text-emerald-600"></i> Download Format
-              </button>
-              <label class="px-3 py-2 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 cursor-pointer flex items-center">
-                <i data-lucide="upload" class="w-4 h-4 mr-1.5"></i> Import Excel
-                <input type="file" accept=".xlsx, .xls" class="hidden" onchange="importExcel(event, 'parties')">
-              </label>
-              <button onclick="exportTableToExcel('parties')" class="px-3 py-2 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center">
-                <i data-lucide="download" class="w-4 h-4 mr-1.5 text-blue-600"></i> Export Excel
-              </button>
-              <button onclick="openModal('addPartyModal')" class="px-4 py-2 text-xs font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
-                <i data-lucide="user-plus" class="w-4 h-4 mr-1.5"></i> + Add Customer
-              </button>
-            </div>
-          </div>
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <table class="w-full text-left text-sm" id="partiesTable">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-xs uppercase">
-                <tr>
-                  <th class="p-3">Party Name</th>
-                  <th class="p-3">Phone</th>
-                  <th class="p-3">GSTIN / DL</th>
-                  <th class="p-3">Industry</th>
-                  <th class="p-3">Credit Limit</th>
-                  <th class="p-3">Outstanding</th>
-                  <th class="p-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="partiesTableBody" class="divide-y divide-slate-100"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- 3. SUPPLIER / VENDOR MASTER -->
-        <section id="view_suppliers" class="erp-view hidden">
-          <div class="flex justify-between items-center mb-6">
-            <div>
-              <h2 class="text-2xl font-bold text-slate-800">Supplier Master (Vendors)</h2>
-              <p class="text-sm text-slate-500">Raw material suppliers, distributors, and payable accounts</p>
-            </div>
-            <div class="flex space-x-2">
-              <button onclick="downloadTemplate('suppliers')" class="px-3 py-2 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center">
-                <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-1.5 text-emerald-600"></i> Download Format
-              </button>
-              <label class="px-3 py-2 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 cursor-pointer flex items-center">
-                <i data-lucide="upload" class="w-4 h-4 mr-1.5"></i> Import Excel
-                <input type="file" accept=".xlsx, .xls" class="hidden" onchange="importExcel(event, 'suppliers')">
-              </label>
-              <button onclick="exportTableToExcel('suppliers')" class="px-3 py-2 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center">
-                <i data-lucide="download" class="w-4 h-4 mr-1.5 text-blue-600"></i> Export Excel
-              </button>
-              <button onclick="openModal('addSupplierModal')" class="px-4 py-2 text-xs font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
-                <i data-lucide="truck" class="w-4 h-4 mr-1.5"></i> + Add Supplier
-              </button>
-            </div>
-          </div>
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <table class="w-full text-left text-sm" id="suppliersTable">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-xs uppercase">
-                <tr>
-                  <th class="p-3">Supplier Name</th>
-                  <th class="p-3">Phone</th>
-                  <th class="p-3">GSTIN / License</th>
-                  <th class="p-3">Category</th>
-                  <th class="p-3">Total Payable</th>
-                  <th class="p-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="suppliersTableBody" class="divide-y divide-slate-100"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- 4. INVENTORY / STOCK MASTER -->
-        <section id="view_inventory" class="erp-view hidden">
-          <div class="flex justify-between items-center mb-6">
-            <div>
-              <h2 class="text-2xl font-bold text-slate-800">Inventory & Product Master</h2>
-              <p class="text-sm text-slate-500">Pharma batches, Building materials, Hardware tools stock</p>
-            </div>
-            <div class="flex space-x-2">
-              <button onclick="downloadTemplate('inventory')" class="px-3 py-2 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center">
-                <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-1.5 text-emerald-600"></i> Download Format
-              </button>
-              <label class="px-3 py-2 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 cursor-pointer flex items-center">
-                <i data-lucide="upload" class="w-4 h-4 mr-1.5"></i> Import Excel
-                <input type="file" accept=".xlsx, .xls" class="hidden" onchange="importExcel(event, 'inventory')">
-              </label>
-              <button onclick="exportTableToExcel('inventory')" class="px-3 py-2 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center">
-                <i data-lucide="download" class="w-4 h-4 mr-1.5 text-blue-600"></i> Export Excel
-              </button>
-              <button onclick="openModal('addItemModal')" class="px-4 py-2 text-xs font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
-                <i data-lucide="plus" class="w-4 h-4 mr-1.5"></i> + Add Item
-              </button>
-            </div>
-          </div>
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <table class="w-full text-left text-sm" id="inventoryTable">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-xs uppercase">
-                <tr>
-                  <th class="p-3">Item / SKU</th>
-                  <th class="p-3">Industry Specifics</th>
-                  <th class="p-3">In Stock</th>
-                  <th class="p-3">Purchase Price</th>
-                  <th class="p-3">Sale Price</th>
-                  <th class="p-3">Status</th>
-                  <th class="p-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="inventoryTableBody" class="divide-y divide-slate-100"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- 5. SALES & INVOICING -->
-        <section id="view_sales" class="erp-view hidden">
-          <div class="flex justify-between items-center mb-6">
-            <div>
-              <h2 class="text-2xl font-bold text-slate-800">Sales Invoicing & Registry</h2>
-              <p class="text-sm text-slate-500">GST billing, approvals, and dispatch registers</p>
-            </div>
-            <div class="flex space-x-2">
-              <button onclick="exportTableToExcel('sales')" class="px-3 py-2 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center">
-                <i data-lucide="download" class="w-4 h-4 mr-1.5 text-blue-600"></i> Export Excel
-              </button>
-              <button onclick="openModal('addSaleModal')" class="px-4 py-2 text-xs font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
-                <i data-lucide="file-plus" class="w-4 h-4 mr-1.5"></i> + New Invoice
-              </button>
-            </div>
-          </div>
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <table class="w-full text-left text-sm" id="salesTable">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-xs uppercase">
-                <tr>
-                  <th class="p-3">Invoice #</th>
-                  <th class="p-3">Date</th>
-                  <th class="p-3">Customer</th>
-                  <th class="p-3">Amount</th>
-                  <th class="p-3">Status</th>
-                  <th class="p-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="salesTableBody" class="divide-y divide-slate-100"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- 6. APPROVALS WORKFLOW -->
-        <section id="view_approvals" class="erp-view hidden">
-          <div class="mb-6">
-            <h2 class="text-2xl font-bold text-slate-800">Maker-Checker Authorization Hub</h2>
-            <p class="text-sm text-slate-500">Review transactions flagged for management verification</p>
-          </div>
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-xs uppercase">
-                <tr>
-                  <th class="p-3">Ref ID</th>
-                  <th class="p-3">Type</th>
-                  <th class="p-3">Initiated By</th>
-                  <th class="p-3">Party</th>
-                  <th class="p-3">Amount</th>
-                  <th class="p-3 text-right">Decision</th>
-                </tr>
-              </thead>
-              <tbody id="approvalsTableBody" class="divide-y divide-slate-100"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- 7. SETTINGS & CUSTOMIZATION (Icons, Users, Sync) -->
-        <section id="view_settings" class="erp-view hidden">
-          <div class="mb-6">
-            <h2 class="text-2xl font-bold text-slate-800">System Customization & User Control</h2>
-            <p class="text-sm text-slate-500">Configure icons, modules, IDs, passwords, and multi-device sync</p>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Icon & Menu Customizer -->
-            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-              <h3 class="text-base font-bold text-slate-900 mb-2 flex items-center">
-                <i data-lucide="palette" class="w-5 h-5 mr-2 text-blue-600"></i> Module & Icon Customizer
-              </h3>
-              <p class="text-xs text-slate-500 mb-4">Aap apne hisaab se har module ka naam aur icon badal sakte hain.</p>
-              <div id="iconCustomizerList" class="space-y-3">
-                <!-- Dynamically populated -->
-              </div>
-              <button onclick="saveMenuPreferences()" class="mt-4 w-full py-2 bg-slate-900 text-white font-bold rounded-lg text-xs hover:bg-slate-800">
-                Save Navigation Customization
-              </button>
-            </div>
-
-            <!-- User ID & Password Management -->
-            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-              <div>
-                <h3 class="text-base font-bold text-slate-900 mb-2 flex items-center">
-                  <i data-lucide="shield-check" class="w-5 h-5 mr-2 text-emerald-600"></i> User ID & Password Manager
-                </h3>
-                <p class="text-xs text-slate-500 mb-4">Create new operators, accountants, or admin credentials.</p>
-                
-                <form id="addUserForm" onsubmit="handleCreateUser(event)" class="space-y-3">
-                  <input id="newUserId" type="text" placeholder="New User ID / Email" required class="w-full text-xs px-3 py-2 border rounded-lg focus:outline-none">
-                  <input id="newUserPassword" type="password" placeholder="Set Password" required class="w-full text-xs px-3 py-2 border rounded-lg focus:outline-none">
-                  <select id="newUserRole" class="w-full text-xs px-3 py-2 border rounded-lg focus:outline-none">
-                    <option value="Admin">Administrator (Full Access)</option>
-                    <option value="Manager">Manager (Approvals + Reports)</option>
-                    <option value="Operator">Operator (Data Entry Only)</option>
-                  </select>
-                  <button type="submit" class="w-full py-2 bg-blue-600 text-white font-bold text-xs rounded-lg hover:bg-blue-700">
-                    + Add New User Credential
-                  </button>
-                </form>
-              </div>
-
-              <!-- Active Users List -->
-              <div class="mt-4 pt-4 border-t border-slate-200">
-                <span class="text-xs font-bold text-slate-700">Registered IDs:</span>
-                <div id="userListBadge" class="mt-2 space-y-1 text-xs text-slate-600"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-      </main>
-    </div>
-  </div>
-
-  <!-- ================= MODALS ================= -->
-  <!-- Add Customer Modal -->
-  <div id="addPartyModal" class="fixed inset-0 bg-slate-900/60 hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-slate-900 mb-4">Add New Customer</h3>
-      <form onsubmit="saveParty(event)" class="space-y-3 text-xs">
-        <input id="partyName" type="text" placeholder="Customer / Business Name" required class="w-full p-2.5 border rounded-lg">
-        <div class="grid grid-cols-2 gap-3">
-          <input id="partyPhone" type="tel" placeholder="WhatsApp / Phone" required class="p-2.5 border rounded-lg">
-          <input id="partyGstin" type="text" placeholder="GSTIN or DL Number" class="p-2.5 border rounded-lg">
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <select id="partyIndustry" class="p-2.5 border rounded-lg">
-            <option value="Pharmaceuticals">Pharmaceuticals</option>
-            <option value="Building Materials">Building Materials</option>
-            <option value="Hardware & Tools">Hardware & Tools</option>
-            <option value="General Trading">General Trading</option>
-          </select>
-          <input id="partyCredit" type="number" placeholder="Credit Limit (₹)" class="p-2.5 border rounded-lg">
-        </div>
-        <input id="partyAddress" type="text" placeholder="Complete Billing Address" class="w-full p-2.5 border rounded-lg">
-        <div class="flex justify-end space-x-2 pt-3">
-          <button type="button" onclick="closeModal('addPartyModal')" class="px-4 py-2 border rounded-lg">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg">Save Customer</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Add Supplier Modal -->
-  <div id="addSupplierModal" class="fixed inset-0 bg-slate-900/60 hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-slate-900 mb-4">Add New Supplier / Vendor</h3>
-      <form onsubmit="saveSupplier(event)" class="space-y-3 text-xs">
-        <input id="suppName" type="text" placeholder="Supplier / Firm Name" required class="w-full p-2.5 border rounded-lg">
-        <div class="grid grid-cols-2 gap-3">
-          <input id="suppPhone" type="tel" placeholder="Contact Number" required class="p-2.5 border rounded-lg">
-          <input id="suppGstin" type="text" placeholder="GSTIN / License" class="p-2.5 border rounded-lg">
-        </div>
-        <input id="suppCategory" type="text" placeholder="Category (e.g. Bulk Cement, API Chemicals, Drill Bits)" class="w-full p-2.5 border rounded-lg">
-        <input id="suppPayable" type="number" placeholder="Opening Payable Balance (₹)" class="w-full p-2.5 border rounded-lg">
-        <div class="flex justify-end space-x-2 pt-3">
-          <button type="button" onclick="closeModal('addSupplierModal')" class="px-4 py-2 border rounded-lg">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg">Save Supplier</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Add Inventory Modal -->
-  <div id="addItemModal" class="fixed inset-0 bg-slate-900/60 hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-slate-900 mb-4">Add Product / Item</h3>
-      <form onsubmit="saveItem(event)" class="space-y-3 text-xs">
-        <input id="itemName" type="text" placeholder="Item Name (e.g. Paracetamol 650, OPC-53 Cement)" required class="w-full p-2.5 border rounded-lg">
-        <input id="itemSpec" type="text" placeholder="Industry Specifics (Batch/Expiry, Tonnage, or Model/Grade)" class="w-full p-2.5 border rounded-lg">
-        <div class="grid grid-cols-3 gap-3">
-          <input id="itemQty" type="number" placeholder="Opening Stock" required class="p-2.5 border rounded-lg">
-          <input id="itemBuy" type="number" placeholder="Cost Price (₹)" required class="p-2.5 border rounded-lg">
-          <input id="itemSell" type="number" placeholder="Sale Price (₹)" required class="p-2.5 border rounded-lg">
-        </div>
-        <div class="flex justify-end space-x-2 pt-3">
-          <button type="button" onclick="closeModal('addItemModal')" class="px-4 py-2 border rounded-lg">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg">Save Item</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Add Invoice Modal -->
-  <div id="addSaleModal" class="fixed inset-0 bg-slate-900/60 hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-slate-900 mb-4">Create Tax Invoice</h3>
-      <form onsubmit="saveSale(event)" class="space-y-3 text-xs">
-        <select id="salePartySelect" class="w-full p-2.5 border rounded-lg" required>
-          <!-- populated dynamically from parties -->
-        </select>
-        <div class="grid grid-cols-2 gap-3">
-          <input id="saleAmount" type="number" placeholder="Total Invoice Amount (₹)" required class="p-2.5 border rounded-lg">
-          <select id="saleStatus" class="p-2.5 border rounded-lg">
-            <option value="Paid">Paid (Cash/Bank)</option>
-            <option value="Pending">Credit / Unpaid</option>
-            <option value="Approval Required">Flag for Approval</option>
-          </select>
-        </div>
-        <div class="flex justify-end space-x-2 pt-3">
-          <button type="button" onclick="closeModal('addSaleModal')" class="px-4 py-2 border rounded-lg">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg">Generate Invoice</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- New Company Modal -->
-  <div id="newCompanyModal" class="fixed inset-0 bg-slate-900/60 hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-slate-900 mb-4">Create New Business Workspace</h3>
-      <form onsubmit="saveNewCompany(event)" class="space-y-3 text-xs">
-        <input id="newCompName" type="text" placeholder="Enterprise Name (e.g. AS Hardware Traders)" required class="w-full p-2.5 border rounded-lg">
-        <input id="newCompGst" type="text" placeholder="GSTIN / Reg No." class="w-full p-2.5 border rounded-lg">
-        <select id="newCompType" class="w-full p-2.5 border rounded-lg">
-          <option value="Pharma">Pharmaceuticals</option>
-          <option value="Building">Building Materials</option>
-          <option value="Hardware">Hardware & Tools</option>
-          <option value="General">General Enterprise</option>
-        </select>
-        <div class="flex justify-end space-x-2 pt-3">
-          <button type="button" onclick="closeModal('newCompanyModal')" class="px-4 py-2 border rounded-lg">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg">Create Business</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Printable Invoice Area (Hidden off-screen) -->
-  <div id="printableArea" class="p-8 font-sans"></div>
-
-  <!-- ================= JAVASCRIPT ENGINE ================= -->
-  <script>
-    // System Data Initialization with LocalStorage Persistence
-    const DEFAULT_DATA = {
-      companies: [
-        { id: "c1", name: "Apex Pharma Healthcare Ltd", gstin: "06AABCA1234F1Z1", type: "Pharma" },
-        { id: "c2", name: "Vanguard Building Materials & Cement", gstin: "06BBCDE5678G2Z2", type: "Building" },
-        { id: "c3", name: "Titan Hardware & Industrial Tools", gstin: "06CCDDE9012H3Z3", type: "Hardware" }
-      ],
-      activeCompanyId: "c1",
-      users: [
-        { id: "admin@asinfotech.com", pass: "admin123", role: "Master Admin" }
-      ],
-      menuConfig: [
-        { id: "dashboard", label: "Dashboard", icon: "layout-dashboard" },
-        { id: "parties", label: "Party Master", icon: "users" },
-        { id: "suppliers", label: "Supplier Master", icon: "truck" },
-        { id: "inventory", label: "Stock & Inventory", icon: "boxes" },
-        { id: "sales", label: "Sales & Invoices", icon: "receipt" },
-        { id: "approvals", label: "Approvals Hub", icon: "shield-alert" },
-        { id: "settings", label: "Settings & Customizer", icon: "settings" }
-      ],
-      records: {
-        parties: [],
-        suppliers: [],
-        inventory: [],
-        sales: [],
-        approvals: []
-      }
-    };
-
-    let AppState = JSON.parse(localStorage.getItem('AS_INFOTECH_STORE')) || DEFAULT_DATA;
-
-    function saveState() {
-      localStorage.setItem('AS_INFOTECH_STORE', JSON.stringify(AppState));
-      renderAll();
-    }
-
-    // Auth
-    function handleLogin(e) {
-      e.preventDefault();
-      const u = document.getElementById('loginEmail').value.trim();
-      const p = document.getElementById('loginPassword').value.trim();
-      const user = AppState.users.find(x => x.id === u && x.pass === p);
-      if (user) {
-        document.getElementById('authScreen').classList.add('hidden');
-        document.getElementById('appContainer').classList.remove('hidden');
-        document.getElementById('activeUserBadge').innerText = `${user.id} (${user.role})`;
-        renderAll();
-      } else {
-        alert("Invalid User ID or Password");
-      }
-    }
-
-    function handleLogout() {
-      document.getElementById('appContainer').classList.add('hidden');
-      document.getElementById('authScreen').classList.remove('hidden');
-    }
-
-    // Company Switcher
-    function switchCompany(id) {
-      AppState.activeCompanyId = id;
-      saveState();
-    }
-
-    function saveNewCompany(e) {
-      e.preventDefault();
-      const name = document.getElementById('newCompName').value;
-      const gstin = document.getElementById('newCompGst').value;
-      const type = document.getElementById('newCompType').value;
-      const id = "comp_" + Date.now();
-      AppState.companies.push({ id, name, gstin, type });
-      AppState.activeCompanyId = id;
-      closeModal('newCompanyModal');
-      saveState();
-    }
-
-    // Navigation & Views
-    function navigateTo(viewId) {
-      document.querySelectorAll('.erp-view').forEach(v => v.classList.add('hidden'));
-      const target = document.getElementById(`view_${viewId}`);
-      if (target) target.classList.remove('hidden');
-
-      document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-600', 'text-white');
-        btn.classList.add('text-slate-300', 'hover:bg-slate-800');
-      });
-      const activeBtn = document.getElementById(`nav_${viewId}`);
-      if (activeBtn) {
-        activeBtn.classList.add('bg-blue-600', 'text-white');
-        activeBtn.classList.remove('text-slate-300');
-      }
-    }
-
-    // Modal Helpers
-    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-    // RENDER FUNCTIONS
-    function renderAll() {
-      renderCompanies();
-      renderSidebar();
-      renderParties();
-      renderSuppliers();
-      renderInventory();
-      renderSales();
-      renderApprovals();
-      renderStats();
-      renderSettings();
-      lucide.createIcons();
-    }
-
-    function renderCompanies() {
-      const select = document.getElementById('companySelector');
-      select.innerHTML = AppState.companies.map(c => 
-        `<option value="${c.id}" ${c.id === AppState.activeCompanyId ? 'selected' : ''}>${c.name}</option>`
-      ).join('');
-    }
-
-    function renderSidebar() {
-      const nav = document.getElementById('sidebarNav');
-      nav.innerHTML = AppState.menuConfig.map(m => `
-        <button id="nav_${m.id}" onclick="navigateTo('${m.id}')" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition text-slate-300 hover:bg-slate-800">
-          <i data-lucide="${m.icon}" class="w-4 h-4"></i>
-          <span>${m.label}</span>
-        </button>
-      `).join('');
-      navigateTo('dashboard');
-    }
-
-    function getCompanyRecords(key) {
-      return (AppState.records[key] || []).filter(r => r.companyId === AppState.activeCompanyId);
-    }
-
-    function renderParties() {
-      const list = getCompanyRecords('parties');
-      const tbody = document.getElementById('partiesTableBody');
-      const saleSelect = document.getElementById('salePartySelect');
-      
-      tbody.innerHTML = list.length ? list.map(p => `
-        <tr class="hover:bg-slate-50">
-          <td class="p-3 font-semibold text-slate-800">${p.name}</td>
-          <td class="p-3 text-slate-500">${p.phone}</td>
-          <td class="p-3 text-slate-500">${p.gstin || '-'}</td>
-          <td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs">${p.industry}</span></td>
-          <td class="p-3">₹${Number(p.creditLimit || 0).toLocaleString('en-IN')}</td>
-          <td class="p-3 font-bold text-amber-600">₹${Number(p.outstanding || 0).toLocaleString('en-IN')}</td>
-          <td class="p-3 text-right">
-            <button onclick="sendWhatsAppReminder('${p.phone}', '${p.name}', '${p.outstanding}')" class="px-2 py-1 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded text-xs hover:bg-emerald-100 mr-1">
-              WhatsApp
-            </button>
-            <button onclick="deleteRecord('parties', '${p.id}')" class="text-rose-600 hover:text-rose-800 text-xs">Delete</button>
-          </td>
-        </tr>
-      `).join('') : `<tr><td colspan="7" class="text-center p-6 text-slate-400">No customers found. Click + Add Customer or Import Excel.</td></tr>`;
-
-      saleSelect.innerHTML = `<option value="">Select Party</option>` + list.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-    }
-
-    function renderSuppliers() {
-      const list = getCompanyRecords('suppliers');
-      const tbody = document.getElementById('suppliersTableBody');
-      tbody.innerHTML = list.length ? list.map(s => `
-        <tr class="hover:bg-slate-50">
-          <td class="p-3 font-semibold text-slate-800">${s.name}</td>
-          <td class="p-3 text-slate-500">${s.phone}</td>
-          <td class="p-3 text-slate-500">${s.gstin || '-'}</td>
-          <td class="p-3"><span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs">${s.category || 'General'}</span></td>
-          <td class="p-3 font-bold text-rose-600">₹${Number(s.payable || 0).toLocaleString('en-IN')}</td>
-          <td class="p-3 text-right">
-            <button onclick="deleteRecord('suppliers', '${s.id}')" class="text-rose-600 hover:text-rose-800 text-xs">Delete</button>
-          </td>
-        </tr>
-      `).join('') : `<tr><td colspan="6" class="text-center p-6 text-slate-400">No suppliers registered. Click + Add Supplier or Import Excel.</td></tr>`;
-    }
-
-    function renderInventory() {
-      const list = getCompanyRecords('inventory');
-      const tbody = document.getElementById('inventoryTableBody');
-      tbody.innerHTML = list.length ? list.map(item => `
-        <tr class="hover:bg-slate-50">
-          <td class="p-3 font-semibold text-slate-800">${item.name}</td>
-          <td class="p-3 text-slate-500">${item.spec || '-'}</td>
-          <td class="p-3 font-bold">${item.qty} Units</td>
-          <td class="p-3 text-slate-600">₹${Number(item.buy).toLocaleString('en-IN')}</td>
-          <td class="p-3 font-semibold text-slate-800">₹${Number(item.sell).toLocaleString('en-IN')}</td>
-          <td class="p-3"><span class="px-2 py-0.5 rounded text-xs ${item.qty < 10 ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-emerald-100 text-emerald-800'}">${item.qty < 10 ? 'Low Stock' : 'Adequate'}</span></td>
-          <td class="p-3 text-right">
-            <button onclick="deleteRecord('inventory', '${item.id}')" class="text-rose-600 hover:text-rose-800 text-xs">Delete</button>
-          </td>
-        </tr>
-      `).join('') : `<tr><td colspan="7" class="text-center p-6 text-slate-400">Stock is empty. Click + Add Item or upload via Excel.</td></tr>`;
-    }
-
-    function renderSales() {
-      const list = getCompanyRecords('sales');
-      const tbody = document.getElementById('salesTableBody');
-      tbody.innerHTML = list.length ? list.map(s => `
-        <tr class="hover:bg-slate-50">
-          <td class="p-3 font-semibold text-blue-600">${s.invNo}</td>
-          <td class="p-3 text-slate-500">${s.date}</td>
-          <td class="p-3 font-semibold text-slate-800">${s.party}</td>
-          <td class="p-3 font-bold">₹${Number(s.amount).toLocaleString('en-IN')}</td>
-          <td class="p-3"><span class="px-2 py-0.5 rounded text-xs ${s.status === 'Paid' ? 'bg-emerald-100 text-emerald-700' : (s.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700 font-bold')}">${s.status}</span></td>
-          <td class="p-3 text-right">
-            <button onclick="printInvoice('${s.id}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs mr-1">Print Tax Bill</button>
-            <button onclick="deleteRecord('sales', '${s.id}')" class="text-rose-600 text-xs">Delete</button>
-          </td>
-        </tr>
-      `).join('') : `<tr><td colspan="6" class="text-center p-6 text-slate-400">No sales transactions logged yet.</td></tr>`;
-    }
-
-    function renderApprovals() {
-      const list = getCompanyRecords('approvals');
-      const tbody = document.getElementById('approvalsTableBody');
-      tbody.innerHTML = list.length ? list.map(a => `
-        <tr class="hover:bg-slate-50">
-          <td class="p-3 font-mono text-xs font-bold text-slate-700">${a.refId}</td>
-          <td class="p-3"><span class="px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs">${a.type}</span></td>
-          <td class="p-3 text-slate-600">${a.initiator}</td>
-          <td class="p-3 font-semibold text-slate-800">${a.party}</td>
-          <td class="p-3 font-bold">₹${Number(a.amount).toLocaleString('en-IN')}</td>
-          <td class="p-3 text-right space-x-2">
-            <button onclick="resolveApproval('${a.id}', true)" class="px-2.5 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">Authorize</button>
-            <button onclick="resolveApproval('${a.id}', false)" class="px-2.5 py-1 bg-rose-600 text-white rounded text-xs hover:bg-rose-700">Decline</button>
-          </td>
-        </tr>
-      `).join('') : `<tr><td colspan="6" class="text-center p-6 text-slate-400">No pending approvals in queue.</td></tr>`;
-    }
-
-    function renderStats() {
-      const sales = getCompanyRecords('sales');
-      const totalSales = sales.reduce((sum, s) => sum + Number(s.amount || 0), 0);
-      const parties = getCompanyRecords('parties');
-      const totalOutstanding = parties.reduce((sum, p) => sum + Number(p.outstanding || 0), 0);
-      const inventory = getCompanyRecords('inventory');
-      const estCost = inventory.reduce((sum, i) => sum + (Number(i.buy || 0) * Number(i.qty || 0)), 0);
-
-      document.getElementById('statSales').innerText = '₹' + totalSales.toLocaleString('en-IN');
-      document.getElementById('statPurchases').innerText = '₹' + estCost.toLocaleString('en-IN');
-      document.getElementById('statProfit').innerText = '₹' + Math.max(0, totalSales - (estCost * 0.4)).toLocaleString('en-IN');
-      document.getElementById('statReceivables').innerText = '₹' + totalOutstanding.toLocaleString('en-IN');
-    }
-
-    function renderSettings() {
-      const userBox = document.getElementById('userListBadge');
-      userBox.innerHTML = AppState.users.map(u => `
-        <div class="flex justify-between py-1 border-b border-slate-100">
-          <span>${u.id} (${u.role})</span>
-          <span class="text-slate-400">••••••••</span>
-        </div>
-      `).join('');
-
-      const customizerList = document.getElementById('iconCustomizerList');
-      const availableIcons = ['layout-dashboard', 'users', 'truck', 'boxes', 'receipt', 'shield-alert', 'settings', 'wallet', 'briefcase', 'bar-chart-3', 'shopping-cart', 'landmark'];
-      
-      customizerList.innerHTML = AppState.menuConfig.map((m, idx) => `
-        <div class="flex items-center space-x-2 text-xs">
-          <input type="text" value="${m.label}" id="menu_label_${idx}" class="p-1.5 border rounded flex-1">
-          <select id="menu_icon_${idx}" class="p-1.5 border rounded">
-            ${availableIcons.map(ic => `<option value="${ic}" ${ic === m.icon ? 'selected' : ''}>${ic}</option>`).join('')}
-          </select>
-        </div>
-      `).join('');
-    }
-
-    function saveMenuPreferences() {
-      AppState.menuConfig.forEach((m, idx) => {
-        m.label = document.getElementById(`menu_label_${idx}`).value;
-        m.icon = document.getElementById(`menu_icon_${idx}`).value;
-      });
-      saveState();
-      alert("Navigation and Icons updated successfully!");
-    }
-
-    function handleCreateUser(e) {
-      e.preventDefault();
-      const id = document.getElementById('newUserId').value.trim();
-      const pass = document.getElementById('newUserPassword').value.trim();
-      const role = document.getElementById('newUserRole').value;
-      if (AppState.users.find(u => u.id === id)) {
-        alert("This User ID already exists!");
-        return;
-      }
-      AppState.users.push({ id, pass, role });
-      document.getElementById('addUserForm').reset();
-      saveState();
-      alert("New User credentials activated!");
-    }
-
-    // CRUD Handlers
-    function saveParty(e) {
-      e.preventDefault();
-      AppState.records.parties.push({
-        id: "p_" + Date.now(),
-        companyId: AppState.activeCompanyId,
-        name: document.getElementById('partyName').value,
-        phone: document.getElementById('partyPhone').value,
-        gstin: document.getElementById('partyGstin').value,
-        industry: document.getElementById('partyIndustry').value,
-        creditLimit: document.getElementById('partyCredit').value || 0,
-        outstanding: 0
-      });
-      closeModal('addPartyModal');
-      saveState();
-    }
-
-    function saveSupplier(e) {
-      e.preventDefault();
-      AppState.records.suppliers.push({
-        id: "s_" + Date.now(),
-        companyId: AppState.activeCompanyId,
-        name: document.getElementById('suppName').value,
-        phone: document.getElementById('suppPhone').value,
-        gstin: document.getElementById('suppGstin').value,
-        category: document.getElementById('suppCategory').value,
-        payable: document.getElementById('suppPayable').value || 0
-      });
-      closeModal('addSupplierModal');
-      saveState();
-    }
-
-    function saveItem(e) {
-      e.preventDefault();
-      AppState.records.inventory.push({
-        id: "i_" + Date.now(),
-        companyId: AppState.activeCompanyId,
-        name: document.getElementById('itemName').value,
-        spec: document.getElementById('itemSpec').value,
-        qty: Number(document.getElementById('itemQty').value),
-        buy: Number(document.getElementById('itemBuy').value),
-        sell: Number(document.getElementById('itemSell').value)
-      });
-      closeModal('addItemModal');
-      saveState();
-    }
-
-    function saveSale(e) {
-      e.preventDefault();
-      const party = document.getElementById('salePartySelect').value;
-      const amount = Number(document.getElementById('saleAmount').value);
-      const status = document.getElementById('saleStatus').value;
-      const invNo = "ASI-" + Math.floor(1000 + Math.random() * 9000);
-
-      if (status === 'Approval Required') {
-        AppState.records.approvals.push({
-          id: "app_" + Date.now(),
-          refId: invNo,
-          companyId: AppState.activeCompanyId,
-          type: "High-Value Invoice",
-          initiator: "Staff Operator",
-          party: party,
-          amount: amount
-        });
-      }
-
-      AppState.records.sales.push({
-        id: "sl_" + Date.now(),
-        companyId: AppState.activeCompanyId,
-        invNo: invNo,
-        date: new Date().toISOString().split('T')[0],
-        party: party,
-        amount: amount,
-        status: status
-      });
-
-      if (status === 'Pending') {
-        const found = AppState.records.parties.find(p => p.name === party && p.companyId === AppState.activeCompanyId);
-        if (found) found.outstanding = Number(found.outstanding || 0) + amount;
-      }
-
-      closeModal('addSaleModal');
-      saveState();
-    }
-
-    function resolveApproval(id, approved) {
-      const idx = AppState.records.approvals.findIndex(a => a.id === id);
-      if (idx !== -1) {
-        const a = AppState.records.approvals[idx];
-        const sale = AppState.records.sales.find(s => s.invNo === a.refId);
-        if (sale) {
-          sale.status = approved ? 'Authorized' : 'Declined';
-        }
-        AppState.records.approvals.splice(idx, 1);
-        saveState();
-      }
-    }
-
-    function deleteRecord(module, id) {
-      if (confirm("Delete this entry?")) {
-        AppState.records[module] = AppState.records[module].filter(r => r.id !== id);
-        saveState();
-      }
-    }
-
-    function clearCurrentData() {
-      if (confirm("Are you sure you want to clear all data for this active enterprise? This creates a completely clean slate.")) {
-        Object.keys(AppState.records).forEach(key => {
-          AppState.records[key] = AppState.records[key].filter(r => r.companyId !== AppState.activeCompanyId);
-        });
-        saveState();
-      }
-    }
-
-    function sendWhatsAppReminder(phone, name, amount) {
-      const msg = encodeURIComponent(`Namaste ${name} ji, AS Infotech ki taraf se aapka balance ₹${amount} due hai. Kripya shighra payment clear karein. Dhanyawad.`);
-      window.open(`https://wa.me/91${phone}?text=${msg}`, '_blank');
-    }
-
-    function printInvoice(saleId) {
-      const sale = AppState.records.sales.find(s => s.id === saleId);
-      const comp = AppState.companies.find(c => c.id === AppState.activeCompanyId);
-      const printBox = document.getElementById('printableArea');
-      printBox.innerHTML = `
-        <div style="border: 2px solid #000; padding: 20px; font-family: sans-serif;">
-          <h2 style="margin: 0; text-align: center;">TAX INVOICE</h2>
-          <h1 style="margin: 5px 0; text-align: center; color: #2563eb;">${comp.name}</h1>
-          <p style="text-align: center; margin: 0; font-size: 12px;">GSTIN: ${comp.gstin || 'N/A'}</p>
-          <hr style="margin: 15px 0;">
-          <table style="width: 100%; font-size: 14px;">
-            <tr><td><strong>Invoice No:</strong> ${sale.invNo}</td><td style="text-align: right;"><strong>Date:</strong> ${sale.date}</td></tr>
-            <tr><td><strong>Billed To:</strong> ${sale.party}</td><td style="text-align: right;"><strong>Status:</strong> ${sale.status}</td></tr>
-          </table>
-          <br>
-          <table style="width: 100%; border-collapse: collapse; font-size: 14px;" border="1">
-            <thead>
-              <tr style="background: #f1f5f9;">
-                <th style="padding: 8px;">Description</th>
-                <th style="padding: 8px; text-align: right;">Total Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="padding: 8px;">Commercial Goods / Supply as per Order</td>
-                <td style="padding: 8px; text-align: right;">₹${Number(sale.amount).toLocaleString('en-IN')}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div style="text-align: right; margin-top: 20px; font-size: 16px;">
-            <strong>Grand Total: ₹${Number(sale.amount).toLocaleString('en-IN')}</strong>
-          </div>
-          <p style="font-size: 11px; margin-top: 40px;">This is a computer generated invoice by AS Infotech Enterprise ERP.</p>
-        </div>
-      `;
-      window.print();
-    }
-
-    // ================= EXCEL ENGINE (IMPORT / EXPORT / TEMPLATES) =================
-    function downloadTemplate(type) {
-      let data = [];
-      if (type === 'parties') {
-        data = [{ "Party Name": "Shree Ram Medicos", "Phone": "9876543210", "GSTIN": "06AABCT9988D1Z1", "Industry": "Pharmaceuticals", "Credit Limit": 500000 }];
-      } else if (type === 'suppliers') {
-        data = [{ "Supplier Name": "Ultratech Bulk Cement Supply", "Phone": "9812345678", "GSTIN": "06ZZABC1122D2Z4", "Category": "Cement & Aggregates", "Opening Payable": 150000 }];
-      } else if (type === 'inventory') {
-        data = [{ "Item Name": "Amoxicillin 500mg Strip", "Specifics": "Batch: AX-90, Exp: 12/27", "Quantity": 100, "Cost Price": 45, "Sale Price": 85 }];
-      }
-      const ws = XLSX.utils.json_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Template");
-      XLSX.writeFile(wb, `AS_Infotech_${type}_template.xlsx`);
-    }
-
-    function exportTableToExcel(type) {
-      const records = getCompanyRecords(type);
-      if (!records.length) {
-        alert("No records to export!");
-        return;
-      }
-      const ws = XLSX.utils.json_to_sheet(records);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, type.toUpperCase());
-      XLSX.writeFile(wb, `AS_Infotech_${type}_export.xlsx`);
-    }
-
-    function downloadMasterBackup() {
-      const wb = XLSX.utils.book_new();
-      Object.keys(AppState.records).forEach(key => {
-        const data = getCompanyRecords(key);
-        const ws = XLSX.utils.json_to_sheet(data.length ? data : [{ Info: "No Records" }]);
-        XLSX.utils.book_append_sheet(wb, ws, key.toUpperCase());
-      });
-      XLSX.writeFile(wb, `AS_Infotech_MASTER_BACKUP_${new Date().toISOString().slice(0,10)}.xlsx`);
-    }
-
-    function importExcel(e, type) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          const data = new Uint8Array(evt.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheet = workbook.SheetNames[0];
-          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
-          
-          if (!rows.length) {
-            alert("Uploaded file is empty!");
-            return;
-          }
-
-          rows.forEach(r => {
-            if (type === 'parties') {
-              AppState.records.parties.push({
-                id: "p_" + Math.random().toString(36).substr(2, 9),
-                companyId: AppState.activeCompanyId,
-                name: r["Party Name"] || r.Name || "Unnamed Customer",
-                phone: r["Phone"] || r.Mobile || "",
-                gstin: r["GSTIN"] || "",
-                industry: r["Industry"] || "General",
-                creditLimit: Number(r["Credit Limit"] || 0),
-                outstanding: 0
-              });
-            } else if (type === 'suppliers') {
-              AppState.records.suppliers.push({
-                id: "s_" + Math.random().toString(36).substr(2, 9),
-                companyId: AppState.activeCompanyId,
-                name: r["Supplier Name"] || r.Name || "Unnamed Supplier",
-                phone: r["Phone"] || "",
-                gstin: r["GSTIN"] || "",
-                category: r["Category"] || "General",
-                payable: Number(r["Opening Payable"] || 0)
-              });
-            } else if (type === 'inventory') {
-              AppState.records.inventory.push({
-                id: "i_" + Math.random().toString(36).substr(2, 9),
-                companyId: AppState.activeCompanyId,
-                name: r["Item Name"] || r.Name || "Unnamed SKU",
-                spec: r["Specifics"] || r.Batch || "",
-                qty: Number(r["Quantity"] || r.Stock || 0),
-                buy: Number(r["Cost Price"] || 0),
-                sell: Number(r["Sale Price"] || 0)
-              });
-            }
-          });
-
-          saveState();
-          alert(`Successfully imported ${rows.length} rows into ${type.toUpperCase()}!`);
-          e.target.value = '';
-        } catch (err) {
-          alert("Error parsing Excel file. Please use the official format.");
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-  </script>
+<body>
+<header><button class="menu" onclick="toggleMenu()">☰</button><div class="logo">AS <b>INFOTECH</b></div><div class="topright">Admin • Demo Company</div></header>
+<div class="layout">
+<aside id="side">
+<div class="group">Management</div>
+<button class="active" onclick="go('dash',this)">📊 Dashboard</button>
+<button onclick="go('party',this)">👥 Party Master</button>
+<button onclick="go('product',this)">📦 Product Master</button>
+<button onclick="go('sales',this)">🧾 Sales</button>
+<button onclick="go('purchase',this)">🛒 Purchase</button>
+<button onclick="go('stock',this)">📦 Stock</button>
+<div class="group">Accounts</div>
+<button onclick="go('ledger',this)">📒 Ledger</button>
+<button onclick="go('outstanding',this)">💰 Outstanding</button>
+<button onclick="go('expense',this)">💳 Expenses</button>
+<div class="group">Reports</div>
+<button onclick="go('reports',this)">📈 Reports</button>
+<button onclick="go('custom',this)">⚙️ Customisation</button>
+</aside>
+<main>
+<section id="dash" class="page active"><h1>Dashboard</h1><div class="sub">Live demo data — entries update the dashboard</div>
+<div class="cards">
+<div class="card"><div class="label">TOTAL SALES</div><div class="big" id="dSales">₹0</div></div>
+<div class="card"><div class="label">TOTAL PURCHASE</div><div class="big" id="dPurchase">₹0</div></div>
+<div class="card"><div class="label">GROSS PROFIT</div><div class="big green" id="dProfit">₹0</div></div>
+<div class="card"><div class="label">OUTSTANDING</div><div class="big red" id="dOut">₹0</div></div>
+</div>
+<div class="grid"><div class="box"><h3>Business Flow</h3><p>Sales → Stock ↓ → Ledger → Outstanding</p><p>Purchase → Stock ↑ → Supplier Ledger</p></div><div class="box"><h3>Quick Alerts</h3><div id="alerts">No alerts yet.</div></div></div></section>
+
+<section id="party" class="page"><h1>Party Master</h1><div class="sub">Customers and suppliers</div>
+<div class="form"><div class="formgrid"><div class="field"><label>Party Name</label><input id="pn" placeholder="Rajput Builder"></div><div class="field"><label>Type</label><select id="pt"><option>Customer</option><option>Supplier</option><option>Both</option></select></div><div class="field"><label>Mobile</label><input id="pm"></div><div class="field"><label>GSTIN</label><input id="pg"></div><div class="field"><label>Opening Balance</label><input id="pb" type="number" value="0"></div><div class="field"><label>Credit Limit</label><input id="pc" type="number" value="0"></div></div><div class="actions"><button class="btn green" onclick="addParty()">+ Save Party</button></div></div>
+<input class="search" placeholder="Search party..." oninput="filter('partyTable',this.value)"><div class="box"><table id="partyTable"><thead><tr><th>Party</th><th>Type</th><th>Mobile</th><th>GSTIN</th><th>Opening</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="product" class="page"><h1>Product Master</h1><div class="sub">Products, rates and reorder levels</div>
+<div class="form"><div class="formgrid"><div class="field"><label>Product</label><input id="xn" placeholder="UltraTech Cement"></div><div class="field"><label>Purchase Rate</label><input id="xb" type="number" value="350"></div><div class="field"><label>Sale Rate</label><input id="xs" type="number" value="400"></div><div class="field"><label>Opening Stock</label><input id="xo" type="number" value="0"></div><div class="field"><label>Reorder Level</label><input id="xr" type="number" value="10"></div></div><div class="actions"><button class="btn green" onclick="addProduct()">+ Save Product</button></div></div>
+<div class="box"><table id="productTable"><thead><tr><th>Product</th><th>Buy</th><th>Sell</th><th>Opening</th><th>Reorder</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="sales" class="page"><h1>Sales Entry</h1><div class="sub">Sales entry automatically increases receivable and reduces stock</div>
+<div class="form"><div class="formgrid"><div class="field"><label>Party</label><select id="sp"></select></div><div class="field"><label>Product</label><select id="sx"></select></div><div class="field"><label>Quantity</label><input id="sq" type="number" value="1"></div><div class="field"><label>Rate</label><input id="sr" type="number"></div></div><div class="actions"><button class="btn green" onclick="saveSale()">Save Sale</button></div></div>
+<div class="box"><table id="salesTable"><thead><tr><th>Date</th><th>Party</th><th>Product</th><th>Qty</th><th>Amount</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="purchase" class="page"><h1>Purchase Entry</h1><div class="sub">Purchase entry automatically increases stock and payable</div>
+<div class="form"><div class="formgrid"><div class="field"><label>Supplier</label><select id="pp"></select></div><div class="field"><label>Product</label><select id="px"></select></div><div class="field"><label>Quantity</label><input id="pq" type="number" value="1"></div><div class="field"><label>Rate</label><input id="pr" type="number"></div></div><div class="actions"><button class="btn green" onclick="savePurchase()">Save Purchase</button></div></div>
+<div class="box"><table id="purchaseTable"><thead><tr><th>Date</th><th>Supplier</th><th>Product</th><th>Qty</th><th>Amount</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="stock" class="page"><h1>Stock Management</h1><div class="sub">Automatic stock calculation</div><div class="box"><table id="stockTable"><thead><tr><th>Product</th><th>Opening</th><th>Purchase</th><th>Sale</th><th>Current</th><th>Status</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="ledger" class="page"><h1>Ledger</h1><div class="sub">Party-wise transaction summary</div><div class="box"><table id="ledgerTable"><thead><tr><th>Party</th><th>Sales</th><th>Received</th><th>Purchase</th><th>Payable</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="outstanding" class="page"><h1>Outstanding</h1><div class="sub">Receivable and payable summary</div><div class="cards"><div class="card"><div class="label">RECEIVABLE</div><div class="big red" id="rec">₹0</div></div><div class="card"><div class="label">PAYABLE</div><div class="big" id="pay">₹0</div></div></div><br><div class="box"><table id="outTable"><thead><tr><th>Party</th><th>Receivable</th><th>Payable</th><th>Net</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="expense" class="page"><h1>Expenses</h1><div class="sub">Business expense tracking</div><div class="form"><div class="formgrid"><div class="field"><label>Category</label><select id="ec"><option>Transport</option><option>Office</option><option>Salary</option><option>Marketing</option><option>Other</option></select></div><div class="field"><label>Amount</label><input id="ea" type="number"></div><div class="field"><label>Remark</label><input id="er"></div></div><div class="actions"><button class="btn green" onclick="saveExpense()">Save Expense</button></div></div><div class="box"><table id="expenseTable"><thead><tr><th>Category</th><th>Remark</th><th>Amount</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="reports" class="page"><h1>Reports & Analytics</h1><div class="sub">Live business summary</div><div class="box"><h3>Available Reports</h3><p>✓ Sales Register &nbsp; ✓ Purchase Register &nbsp; ✓ Stock Report</p><p>✓ Party Ledger &nbsp; ✓ Outstanding &nbsp; ✓ Expense Report</p><p>✓ Profit / Loss &nbsp; ✓ Product-wise margin</p><button class="btn" onclick="downloadCSV()">Export Data CSV</button></div></section>
+
+<section id="custom" class="page"><h1>Customisation Center</h1><div class="sub">Create client-specific fields for AS Infotech</div><div class="alert">Example: Medical distributor → Batch / Expiry / MRP / PTR / PTS. Builder → Site / Project. Garments → Size / Colour.</div><div class="form"><div class="formgrid"><div class="field"><label>Module</label><select id="cm"><option>Party Master</option><option>Sales</option><option>Purchase</option><option>Stock</option></select></div><div class="field"><label>Custom Field</label><input id="cf" placeholder="e.g. Route / Area"></div><div class="field"><label>Type</label><select id="ct"><option>Text</option><option>Number</option><option>Date</option><option>Dropdown</option></select></div></div><div class="actions"><button class="btn green" onclick="addCustom()">+ Add Custom Field</button></div></div><div class="box"><table id="customTable"><thead><tr><th>Module</th><th>Field</th><th>Type</th></tr></thead><tbody></tbody></table></div></section>
+</main></div>
+<script>
+const K='ASINFOTECH_V1';
+let db=JSON.parse(localStorage.getItem(K)||'null')||{parties:[],products:[],sales:[],purchases:[],expenses:[],custom:[]};
+function save(){localStorage.setItem(K,JSON.stringify(db));renderAll()}
+function money(n){return '₹'+Math.round(n||0).toLocaleString('en-IN')}
+function toggleMenu(){document.getElementById('side').classList.toggle('open')}
+function go(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('aside button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('side').classList.remove('open');renderAll()}
+function addParty(){let n=pn.value.trim();if(!n)return alert('Party name required');db.parties.push({n,t:pt.value,m:pm.value,g:pg.value,b:+pb.value||0,c:+pc.value||0});save();pn.value=pm.value=pg.value='';pb.value=pc.value=0;alert('Party saved')}
+function addProduct(){let n=xn.value.trim();if(!n)return alert('Product name required');db.products.push({n,b:+xb.value||0,s:+xs.value||0,o:+xo.value||0,r:+xr.value||0});save();alert('Product saved')}
+function saveSale(){if(!sp.value||!sx.value)return alert('Add a party and product first');let p=db.products.find(x=>x.n===sx.value);let q=+sq.value||0,r=+sr.value||0;if(q<=0)return alert('Quantity must be greater than 0');db.sales.push({d:new Date().toLocaleDateString('en-IN'),p:sp.value,x:sx.value,q,r,a:q*r});save();alert('Sale saved — stock and outstanding updated')}
+function savePurchase(){if(!pp.value||!px.value)return alert('Add a supplier and product first');let p=db.products.find(x=>x.n===px.value);let q=+pq.value||0,r=+pr.value||0;if(q<=0)return alert('Quantity must be greater than 0');db.purchases.push({d:new Date().toLocaleDateString('en-IN'),p:pp.value,x:px.value,q,r,a:q*r});save();alert('Purchase saved — stock and payable updated')}
+function saveExpense(){let a=+ea.value||0;if(a<=0)return alert('Enter amount');db.expenses.push({c:ec.value,r:er.value,a});save();ea.value=er.value='';alert('Expense saved')}
+function addCustom(){if(!cf.value.trim())return alert('Enter custom field name');db.custom.push({m:cm.value,f:cf.value,t:ct.value});save();cf.value='';alert('Custom field added')}
+function stock(x){let p=db.products.find(y=>y.n===x);if(!p)return 0;return p.o+db.purchases.filter(y=>y.x===x).reduce((a,y)=>a+y.q,0)-db.sales.filter(y=>y.x===x).reduce((a,y)=>a+y.q,0)}
+function filter(id,q){q=q.toLowerCase();document.querySelectorAll('#'+id+' tbody tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(q)?'':'none')}
+function opts(id,arr){let e=document.getElementById(id),v=e.value;e.innerHTML=arr.map(x=>`<option>${x.n||x}</option>`).join('');if(arr.some(x=>(x.n||x)===v))e.value=v}
+function renderAll(){
+document.querySelector('#partyTable tbody').innerHTML=db.parties.map(x=>`<tr><td>${x.n}</td><td>${x.t}</td><td>${x.m||'—'}</td><td>${x.g||'—'}</td><td>${money(x.b)}</td></tr>`).join('');
+document.querySelector('#productTable tbody').innerHTML=db.products.map(x=>`<tr><td>${x.n}</td><td>${money(x.b)}</td><td>${money(x.s)}</td><td>${x.o}</td><td>${x.r}</td></tr>`).join('');
+opts('sp',db.parties.filter(x=>x.t!=='Supplier'));opts('pp',db.parties.filter(x=>x.t!=='Customer'));opts('sx',db.products);opts('px',db.products);
+let sales=db.sales.reduce((a,x)=>a+x.a,0),pur=db.purchases.reduce((a,x)=>a+x.a,0),profit=db.sales.reduce((a,x)=>{let p=db.products.find(y=>y.n===x.x);return a+x.a-x.q*(p?.b||0)},0)-db.expenses.reduce((a,x)=>a+x.a,0);
+let rec=db.sales.reduce((a,x)=>a+x.a,0),pay=db.purchases.reduce((a,x)=>a+x.a,0);
+dSales.textContent=money(sales);dPurchase.textContent=money(pur);dProfit.textContent=money(profit);dOut.textContent=money(rec-pay);document.getElementById('rec').textContent=money(rec);document.getElementById('pay').textContent=money(pay);
+document.querySelector('#salesTable tbody').innerHTML=db.sales.map(x=>`<tr><td>${x.d}</td><td>${x.p}</td><td>${x.x}</td><td>${x.q}</td><td>${money(x.a)}</td></tr>`).join('');
+document.querySelector('#purchaseTable tbody').innerHTML=db.purchases.map(x=>`<tr><td>${x.d}</td><td>${x.p}</td><td>${x.x}</td><td>${x.q}</td><td>${money(x.a)}</td></tr>`).join('');
+document.querySelector('#stockTable tbody').innerHTML=db.products.map(x=>{let s=stock(x.n);return `<tr><td>${x.n}</td><td>${x.o}</td><td>${db.purchases.filter(y=>y.x===x.n).reduce((a,y)=>a+y.q,0)}</td><td>${db.sales.filter(y=>y.x===x.n).reduce((a,y)=>a+y.q,0)}</td><td><b>${s}</b></td><td>${s<=x.r?'<span class="tag" style="background:#fff1e8;color:#d97706">LOW</span>':'<span class="tag">OK</span>'}</td></tr>`}).join('');
+let parties=db.parties.map(p=>{let s=db.sales.filter(x=>x.p===p.n).reduce((a,x)=>a+x.a,0),q=db.purchases.filter(x=>x.p===p.n).reduce((a,x)=>a+x.a,0);return {p:p.n,s,q}});document.querySelector('#ledgerTable tbody').innerHTML=parties.map(x=>`<tr><td>${x.p}</td><td>${money(x.s)}</td><td>₹0</td><td>${money(x.q)}</td><td>${money(x.q)}</td></tr>`).join('');
+document.querySelector('#outTable tbody').innerHTML=parties.map(x=>`<tr><td>${x.p}</td><td>${money(x.s)}</td><td>${money(x.q)}</td><td>${money(x.s-x.q)}</td></tr>`).join('');
+document.querySelector('#expenseTable tbody').innerHTML=db.expenses.map(x=>`<tr><td>${x.c}</td><td>${x.r}</td><td>${money(x.a)}</td></tr>`).join('');
+document.querySelector('#customTable tbody').innerHTML=db.custom.map(x=>`<tr><td>${x.m}</td><td>${x.f}</td><td>${x.t}</td></tr>`).join('');
+document.getElementById('alerts').innerHTML=db.products.filter(x=>stock(x.n)<=x.r).map(x=>`<p>🟠 ${x.n} is at/below reorder level</p>`).join('')||'🟢 No low-stock alerts.';
+document.getElementById('sr').value=db.products[0]?.s||0;document.getElementById('pr').value=db.products[0]?.b||0;
+}
+function downloadCSV(){let rows=[['Type','Party','Product','Qty','Amount'],...db.sales.map(x=>['Sale',x.p,x.x,x.q,x.a]),...db.purchases.map(x=>['Purchase',x.p,x.x,x.q,x.a])];let csv=rows.map(r=>r.join(',')).join('\\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='AS_Infotech_Report.csv';a.click()}
+renderAll();
+</script>
 </body>
 </html>
